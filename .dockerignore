@@ -1,0 +1,5 @@
+image-hosting
+.dockerignore
+Dockerfile
+.venv
+.idea
