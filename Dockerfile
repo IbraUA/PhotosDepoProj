@@ -2,4 +2,4 @@ FROM python:3.10.21-alpine3.24
 WORKDIR /app
 COPY . .
 RUN pip install -r requirements.txt
-CMD ["python3", "server.py"]
+CMD ["python3", "app.py"]

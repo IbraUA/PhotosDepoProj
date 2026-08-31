@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>PhotoDrop</title>
+</head>
+<body>
+    <h1>PhotoDrop — сервіс для зберігання зображень</h1>
+    <p>Завантаж картинку — отримай пряме посилання на неї.</p>
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".jpg,.jpeg,.png,.gif">
+        <button type="submit">Завантажити</button>
+    </form>
+
+    <p><a href="/images/">Переглянути завантажені зображення</a></p>
+</body>
+</html>
