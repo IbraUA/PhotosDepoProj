@@ -1,18 +1,52 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PhotoDrop</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
-    <h1>PhotoDrop — сервіс для зберігання зображень</h1>
-    <p>Завантаж картинку — отримай пряме посилання на неї.</p>
+    <section class="upload__intro">
+        <h2 class="upload__title">PhotoDrop</h2>
+        <p class="upload__description">Завантаж селфі, меми чи будь-які фотки — отримай пряме посилання.</p>
+    </section>
+    <section class="upload__form">
+        <div class="upload__dropzone">
+            <div class="upload__icon">
+                <img src="/static/img/icon/feather_upload-cloud.png" alt="icon">
+            </div>
+            <p class="upload__promt">Обери файл або перетягни сюди</p>
+            <p class="upload__info">Підтримуються лише .jpg, .png та .gif. <br>
+                Максимальний розмір — 5MB</p>
+        </div>
+        <div class="upload__button">
+            <input type="file" id="file-upload" accept="image/*" style="display: none;">
+            <label for="file-upload" class="upload__button-btn">Обрати файл</label>
+        </div>
+        <div class="upload__container">
+            <div class="upload__group">
+                <h2 class="upload__title-current">Поточне завантаження</h2>
+                <div class="upload__label">
+                    <input type="text" class="upload__input" placeholder="https://" readonly />
+                    <button class="upload__copy">COPY</button>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".jpg,.jpeg,.png,.gif">
-        <button type="submit">Завантажити</button>
-    </form>
-
-    <p><a href="/images/">Переглянути завантажені зображення</a></p>
+    <p style="text-align:center; margin-top: 2rem;">
+        <a href="/images/">Переглянути всі завантажені зображення</a>
+    </p>
 </body>
+<script src="/static/js/upload.js"></script>
+
 </html>
