@@ -16,20 +16,23 @@ with open("templates/index.html", "r", encoding="utf-8") as file:
     html = file.read()
 
 
-# template = file.read()
-# class Handler(BaseHTTPRequestHandler):
-# HOST = '0.0.0.0'
-# PORT = 8000
 def extract_file_data(handler):
+    # скільки байтів тіла запиту очікувати (браузер сам повідомляє через заголовок)
     length = int(handler.headers.get("Content-Length"))
+    # читаємо рівно стільки байтів, скільки заявлено в Content-Length
     body = handler.rfile.read(length)
 
+    # дістаємо сам роздільник (boundary) із заголовка Content-Type
     boundary = handler.headers['Content-Type'].split('boundary=')[-1].encode()
+    # шукаємо перший подвійний перенос і починаємо читати через 4 символи після цього
     start = body.find(b"\r\n\r\n") + 4
+    # також визначаємо кінцеву частину повідомлення, що буде читатись
     end = body.find(b"\r\n--" + boundary, start)
 
+    # власне байти файлу, вирізані з body між start і end
     data = body[start:end]
 
+    # шукаємо оригінальну назву файлу (filename="...") у тілі запит
     match = re.search(rb'filename="([^"]+)"', body)
     if match is None:
         return None, None
@@ -47,6 +50,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
 
+        # перевірка, чи наявний файл для завантаження
         data, upload_name = extract_file_data(self)
         if data is None:
             self.send_response(400)
@@ -54,10 +58,13 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Bad Request: file is required")
             return
+        # використовуємо саме цю бібліотеку для уніфікації назви файлу (не буде повторюваних назв гарантовано)
         filename = uuid.uuid4().hex + "." + upload_name.split(".")[-1]
 
-
+        # приведення регістру до єдиного виду
         ext = upload_name.split(".")[-1].lower()
+
+        # перевірка розширення (згідно ТЗ)
 
         if ext not in ALLOWED_EXTENSIONS:
             log(f"Помилка: непідтримуваний формат файлу ({upload_name}).")
@@ -67,6 +74,8 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(b"Bad Request: unsupported file format")
             return
 
+        # перевірка максимального розміру файлу
+
         if len(data) > MAX_ALLOWED_SIZE:
             log(f"Помилка: файл перевищує ліміт розміру 5 МБ ({upload_name}).")
             self.send_response(400)
@@ -74,7 +83,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Bad Request: file too large")
             return
-        print(len(data))
+        # log(len(data))
 
         path = f"images/{filename}"
 
