@@ -1,4 +1,4 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 import re
 import uuid
 from datetime import datetime
@@ -98,8 +98,8 @@ class Handler(BaseHTTPRequestHandler):
 
         self.wfile.write(f"http://localhost:8080/{path}".encode())
 
-server = HTTPServer(
-    ("0.0.0.0", 8000),
-    Handler)
+# створення сервера, що обробляє запити в окремих потоках (ThreadingHTTPServer)
+
+server = ThreadingHTTPServer(("0.0.0.0", 8000), Handler)
 
 server.serve_forever()
