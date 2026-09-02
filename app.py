@@ -5,8 +5,9 @@ from datetime import datetime
 from PIL import Image
 import io
 
-
-ALLOWED_EXTENSIONS = {"jpg", "gif", "png"}
+# .jpeg технічно не згадано в ТЗ (лише .jpg), але це той самий формат JPEG —
+# додано для реальної зручності (WhatsApp, iPhone та багато камер зберігають саме так)
+ALLOWED_EXTENSIONS = {"jpg", "gif", "png", "jpeg"}
 MAX_ALLOWED_SIZE = 1024 * 1024 * 5
 
 def log(message):
