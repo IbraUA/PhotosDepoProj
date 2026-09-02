@@ -21,28 +21,34 @@ with open("templates/index.html", "r", encoding="utf-8") as file:
 
 
 def extract_file_data(handler):
-    # скільки байтів тіла запиту очікувати (браузер сам повідомляє через заголовок)
-    length = int(handler.headers.get("Content-Length"))
-    # читаємо рівно стільки байтів, скільки заявлено в Content-Length
-    body = handler.rfile.read(length)
+    try:
+        # скільки байтів тіла запиту очікувати (браузер сам повідомляє через заголовок)
+        length = int(handler.headers.get("Content-Length"))
+        # читаємо рівно стільки байтів, скільки заявлено в Content-Length
+        body = handler.rfile.read(length)
 
-    # дістаємо сам роздільник (boundary) із заголовка Content-Type
-    boundary = handler.headers['Content-Type'].split('boundary=')[-1].encode()
-    # шукаємо перший подвійний перенос і починаємо читати через 4 символи після цього
-    start = body.find(b"\r\n\r\n") + 4
-    # також визначаємо кінцеву частину повідомлення, що буде читатись
-    end = body.find(b"\r\n--" + boundary, start)
+        # дістаємо сам роздільник (boundary) із заголовка Content-Type
+        boundary = handler.headers['Content-Type'].split('boundary=')[-1].encode()
+        # шукаємо перший подвійний перенос і починаємо читати через 4 символи після цього
+        start = body.find(b"\r\n\r\n") + 4
+        # також визначаємо кінцеву частину повідомлення, що буде читатись
+        end = body.find(b"\r\n--" + boundary, start)
 
-    # власне байти файлу, вирізані з body між start і end
-    data = body[start:end]
+        # власне байти файлу, вирізані з body між start і end
+        data = body[start:end]
 
-    # шукаємо оригінальну назву файлу (filename="...") у тілі запит
-    match = re.search(rb'filename="([^"]+)"', body)
-    if match is None:
+        # шукаємо оригінальну назву файлу (filename="...") у тілі запит
+        match = re.search(rb'filename="([^"]+)"', body)
+        if match is None:
+            return None, None
+        upload_name = match.group(1).decode()
+
+        return data, upload_name
+    except Exception as e:
+        log(f"Непередбачена помилка при парсингу: {e}")
         return None, None
-    upload_name = match.group(1).decode()
 
-    return data, upload_name
+
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
