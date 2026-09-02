@@ -2,6 +2,9 @@ from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 import re
 import uuid
 from datetime import datetime
+from PIL import Image
+import io
+
 
 ALLOWED_EXTENSIONS = {"jpg", "gif", "png"}
 MAX_ALLOWED_SIZE = 1024 * 1024 * 5
@@ -9,7 +12,7 @@ MAX_ALLOWED_SIZE = 1024 * 1024 * 5
 def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open("logs/app.log", "a", encoding="utf-8") as f:
-        f.write(f"{timestamp}: {message}\n")
+        f.write(f"[{timestamp}] {message}\n")
 
 
 with open("templates/index.html", "r", encoding="utf-8") as file:
@@ -83,6 +86,19 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Bad Request: file too large")
             return
+
+        # перевірка, що файл РЕАЛЬНО є зображенням (не лише за розширенням імені)
+        try:
+            img = Image.open(io.BytesIO(data))
+            img.verify()
+        except Exception:
+            log(f"Помилка: файл не є валідним зображенням ({upload_name}).")
+            self.send_response(400)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b"Bad Request: file is not a valid image")
+            return
+
         # log(len(data))
 
         path = f"images/{filename}"
