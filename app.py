@@ -9,12 +9,12 @@ import io
 # додано для реальної зручності (WhatsApp, iPhone та багато камер зберігають саме так)
 ALLOWED_EXTENSIONS = {"jpg", "gif", "png", "jpeg"}
 MAX_ALLOWED_SIZE = 1024 * 1024 * 5
+FORMAT_BY_EXTENSION = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "gif": "GIF"}
 
 def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open("logs/app.log", "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] {message}\n")
-
 
 with open("templates/index.html", "r", encoding="utf-8") as file:
     html = file.read()
@@ -47,8 +47,6 @@ def extract_file_data(handler):
     except Exception as e:
         log(f"Непередбачена помилка при парсингу: {e}")
         return None, None
-
-
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -98,6 +96,14 @@ class Handler(BaseHTTPRequestHandler):
         try:
             img = Image.open(io.BytesIO(data))
             img.verify()
+            if img.format != FORMAT_BY_EXTENSION.get(ext):
+                log(f"Формат картинки ({upload_name}) не відповідає розширенню .")
+                self.send_response(400)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b"Bad Request: file extension is fake")
+                return
+
         except Exception:
             log(f"Помилка: файл не є валідним зображенням ({upload_name}).")
             self.send_response(400)
@@ -109,7 +115,6 @@ class Handler(BaseHTTPRequestHandler):
         # log(len(data))
 
         path = f"images/{filename}"
-
         with open(path, "wb") as f:
             f.write(data)
 
@@ -122,7 +127,5 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(f"http://localhost:8080/{path}".encode())
 
 # створення сервера, що обробляє запити в окремих потоках (ThreadingHTTPServer)
-
 server = ThreadingHTTPServer(("0.0.0.0", 8000), Handler)
-
 server.serve_forever()
