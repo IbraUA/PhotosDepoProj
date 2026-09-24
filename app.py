@@ -5,6 +5,17 @@ from datetime import datetime
 from PIL import Image
 import io
 
+import os
+import psycopg
+
+def get_connection():
+    return psycopg.connect(
+        dbname=os.environ.get("POSTGRES_DB", "app"),
+        user=os.environ.get("POSTGRES_USER", "app"),
+        password=os.environ.get("POSTGRES_PASSWORD", "app"),
+        host=os.environ.get("POSTGRES_HOST", "db"),
+        port=os.environ.get("POSTGRES_PORT", "5432"),
+    )
 # .jpeg технічно не згадано в ТЗ (лише .jpg), але це той самий формат JPEG —
 # додано для реальної зручності (WhatsApp, iPhone та багато камер зберігають саме так)
 ALLOWED_EXTENSIONS = {"jpg", "gif", "png", "jpeg"}
