@@ -4,9 +4,9 @@ import uuid
 from datetime import datetime
 from PIL import Image
 import io
-
 import os
 import psycopg
+from urllib.parse import urlparse, parse_qs
 
 def get_connection():
     return psycopg.connect(
@@ -26,6 +26,17 @@ def log(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open("logs/app.log", "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] {message}\n")
+def save_metadata(filename, original_name, size, file_type):
+    conn = get_connection()
+    try:
+        with conn:  # у psycopg3 "with conn" сам комітить при успіху і робить rollback при помилці
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO images (filename, original_name, size, file_type) VALUES (%s, %s, %s, %s)",
+                    (filename, original_name, size, file_type),
+                )
+    finally:
+        conn.close()
 
 with open("templates/index.html", "r", encoding="utf-8") as file:
     html = file.read()
@@ -61,6 +72,18 @@ def extract_file_data(handler):
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        parsed = urlparse(self.path)
+        if parsed.path =="/images-list":
+            params = parse_qs(parsed.query)
+            page = int(params.get("page", ["1"])[0])
+            rows = get_images_metadata(page=page)
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(str(rows).encode())
+            return
+
+
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
@@ -125,17 +148,37 @@ class Handler(BaseHTTPRequestHandler):
 
         # log(len(data))
 
-        path = f"images/{filename}"
-        with open(path, "wb") as f:
-            f.write(data)
-
-        log(f"Успіх: зображення {filename} завантажено.")
-
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-
-        self.wfile.write(f"http://localhost:8080/{path}".encode())
+        try:
+            save_metadata(filename, upload_name, len(data), ext)
+            path = f"images/{filename}"
+            with open(path, "wb") as f:
+                f.write(data)
+            log(f"Успіх: зображення {filename} завантажено.")
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f"http://localhost:8080/{path}".encode())
+        except Exception as e:
+            log(f"Помилка запису метаданих у БД: {e}")
+            self.send_response(500)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b"Internal Server Error: could not save metadata")
+            return
+# врахуємо можливість зміни OFFSET в майбутньому
+def get_images_metadata(page=1, per_page=10):
+    offset = per_page * (page - 1)
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, filename, original_name, size, upload_time, file_type "
+                "FROM images ORDER BY upload_time DESC LIMIT %s OFFSET %s",
+                (per_page, offset,),
+            )
+            return cur.fetchall()
+    finally:
+        conn.close()
 
 # створення сервера, що обробляє запити в окремих потоках (ThreadingHTTPServer)
 server = ThreadingHTTPServer(("0.0.0.0", 8000), Handler)
