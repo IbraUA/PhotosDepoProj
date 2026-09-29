@@ -18,6 +18,7 @@ def get_connection():
     )
 # .jpeg технічно не згадано в ТЗ (лише .jpg), але це той самий формат JPEG —
 # додано для реальної зручності (WhatsApp, iPhone та багато камер зберігають саме так)
+
 ALLOWED_EXTENSIONS = {"jpg", "gif", "png", "jpeg"}
 MAX_ALLOWED_SIZE = 1024 * 1024 * 5
 FORMAT_BY_EXTENSION = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "gif": "GIF"}
@@ -77,12 +78,28 @@ class Handler(BaseHTTPRequestHandler):
             params = parse_qs(parsed.query)
             page = int(params.get("page", ["1"])[0])
             rows = get_images_metadata(page=page)
-            self.send_response(200)
-            self.send_header('Content-type', 'text/plain; charset=utf-8')
-            self.end_headers()
-            self.wfile.write(str(rows).encode())
-            return
 
+            # prev_link = f"/images-list?page={page - 1}" if page > 1 else ""
+            # next_link = f"/images-list?page={page + 1}" if len(rows) == 10 else ""
+            if page > 1:
+                prev_link = f'<a href="/images-list?page={page-1}">← Попередня</a>'
+            else:
+                prev_link = '<span>← Попередня</span>'
+            if len(rows) == 10:
+                next_link = f'<a href="/images-list?page={page+1}">Наступна →</a>'
+            else:
+                next_link = '<span>Наступна →</span>'
+
+            with open("templates/images_list.html", "r", encoding="utf-8") as file:
+                page_html = file.read()
+                page_html = page_html.replace("{{ROWS}}", render_rows(rows) )
+                page_html = page_html.replace("{{PREV_LINK}}", prev_link)
+                page_html = page_html.replace("{{NEXT_LINK}}", next_link)
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(page_html.encode())
+                return
 
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
@@ -178,8 +195,28 @@ def get_images_metadata(page=1, per_page=10):
             )
             return cur.fetchall()
     finally:
+
         conn.close()
 
+
+def render_rows(rows):
+    if not rows:
+        return "<tr><td colspan='5'>Немає завантажених зображень</td></tr>"
+
+    rows_html = ""
+    for row in rows:
+        img_id, filename, original_name, size, upload_time, file_type = row
+        size_kb = round(size / 1024, 1)
+        rows_html += f"""
+        <tr>
+            <td><a href="/images/{filename}">{filename}</a></td>
+            <td>{original_name}</td>
+            <td>{size_kb}</td>
+            <td>{upload_time}</td>
+            <td>{file_type}</td>
+        </tr>
+        """
+    return rows_html
 # створення сервера, що обробляє запити в окремих потоках (ThreadingHTTPServer)
 server = ThreadingHTTPServer(("0.0.0.0", 8000), Handler)
 server.serve_forever()

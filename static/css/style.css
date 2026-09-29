@@ -1,4 +1,4 @@
-body {
+Аbody {
     background-color: #F2F5FF;
     font-family: "Inter", sans-serif;
     color: rgb(255, 255, 255);
@@ -320,4 +320,70 @@ body {
     /* REMOVE BACKGROUND ON HOVER */
     opacity: 0.7;
     /* Make the icon semi-transparent for user feedback */
+}
+
+/* images-list table */
+.images-table-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.images-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.images-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: #8a96b1;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.images-table td {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.images-table tr:last-child td {
+    border-bottom: none;
+}
+
+.images-table a {
+    color: rgb(0, 96, 255);
+    text-decoration: none;
+}
+
+.images-table a:hover {
+    text-decoration: underline;
+}
+
+.images-pagination {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.images-pagination a {
+    color: rgb(0, 96, 255);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.images-pagination a:hover {
+    text-decoration: underline;
+}
+
+.images-pagination span {
+    color: #8a96b1;
 }
