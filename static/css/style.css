@@ -1,7 +1,55 @@
-Аbody {
+body {
     background-color: #F2F5FF;
     font-family: "Inter", sans-serif;
     color: rgb(255, 255, 255);
+    min-height: 100vh;
+    /* faint dot grid */
+    background-image: radial-gradient(rgba(0, 96, 255, 0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* background: two soft blue "aurora" blobs drifting behind the page */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    width: 55vmax;
+    height: 55vmax;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+body::before {
+    top: -20vmax;
+    left: -15vmax;
+    background: rgb(0, 96, 255);
+    animation: drift-a 22s ease-in-out infinite alternate;
+}
+
+body::after {
+    bottom: -25vmax;
+    right: -15vmax;
+    background: rgb(140, 170, 255);
+    animation: drift-b 28s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+    to { transform: translate(18vw, 14vh) scale(1.15); }
+}
+
+@keyframes drift-b {
+    to { transform: translate(-16vw, -12vh) scale(0.9); }
+}
+
+/* people who turned off animations in their OS get a still background */
+@media (prefers-reduced-motion: reduce) {
+    body::before,
+    body::after {
+        animation: none;
+    }
 }
 
 /* Header */
@@ -129,6 +177,9 @@
     width: 540px;
     height: 233px;
     text-align: center;
+    /* frosted glass, so the text stays readable over the background */
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
 }
 
 .upload__icon {
