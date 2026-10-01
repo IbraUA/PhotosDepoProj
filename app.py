@@ -39,6 +39,24 @@ def save_metadata(filename, original_name, size, file_type):
     finally:
         conn.close()
 
+def delete_image(img_id):
+    conn = get_connection()
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM images WHERE id = %s RETURNING filename",
+                    (img_id,),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    return None
+                else:
+                    return row[0]
+    finally:
+        conn.close()
+
+
 with open("templates/index.html", "r", encoding="utf-8") as file:
     html = file.read()
 
@@ -108,6 +126,37 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(html.encode())
 
     def do_POST(self):
+        parsed = urlparse(self.path)
+        if parsed.path.startswith("/delete/"):
+            try:
+                img_id = int(parsed.path.split("/")[-1])
+            except ValueError:
+                log(f"Bad Request: you entered an invalid image ID.")
+                self.send_response(400)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b"Bad Request: invalid image id")
+                return
+            filename = delete_image(img_id)
+
+            if filename is None:
+                log(f"Помилка видалення: зображення {img_id} не знайдено")
+                self.send_response(404)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b"Not found: no such image id")
+            else:
+                path = f"images/{filename}"
+                if os.path.exists(path):
+                    os.remove(path)
+                else:
+                    log(f"Попередження: файл {filename} відсутній на диску (id={img_id}).")
+                log(f"Успіх: зображення {filename} (id={img_id}) видалено.")
+                self.send_response(303)
+                self.send_header("Location", "/images-list")
+                self.end_headers()
+
+            return
 
         # перевірка, чи наявний файл для завантаження
         data, upload_name = extract_file_data(self)
@@ -182,6 +231,9 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Internal Server Error: could not save metadata")
             return
+
+
+
 # врахуємо можливість зміни OFFSET в майбутньому
 def get_images_metadata(page=1, per_page=10):
     offset = per_page * (page - 1)
@@ -201,7 +253,7 @@ def get_images_metadata(page=1, per_page=10):
 
 def render_rows(rows):
     if not rows:
-        return "<tr><td colspan='5'>Немає завантажених зображень</td></tr>"
+        return "<tr><td colspan='6'>Немає завантажених зображень</td></tr>"
 
     rows_html = ""
     for row in rows:
@@ -209,11 +261,17 @@ def render_rows(rows):
         size_kb = round(size / 1024, 1)
         rows_html += f"""
         <tr>
-            <td><a href="/images/{filename}">{filename}</a></td>
+            <td>
+                <a href="/images/{filename}">{filename}</a></td>
             <td>{original_name}</td>
             <td>{size_kb}</td>
             <td>{upload_time}</td>
             <td>{file_type}</td>
+            <td>
+                <form method="POST" action="/delete/{img_id}">
+                <button>Видалити</button>
+                </form>
+            </td>
         </tr>
         """
     return rows_html
