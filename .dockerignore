@@ -3,3 +3,4 @@ image-hosting
 Dockerfile
 .venv
 .idea
+.env

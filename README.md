@@ -28,12 +28,24 @@ PhotoDrop/
 
 Потрібен лише Docker (з Docker Compose).
 
-```bash
-docker compose up --build
-```
+1. Створи файл `.env` з шаблону і впиши свої значення (користувач, пароль, назва БД):
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   (у Windows PowerShell: `Copy-Item .env.example .env`)
+
+   `.env` обов'язковий: значень за замовчуванням немає, без нього проєкт не запуститься. Файл не потрапляє ні в git, ні в Docker-образ (`.gitignore`, `.dockerignore`).
+
+2. Запусти:
+
+   ```bash
+   docker compose up --build
+   ```
 
 - Веб-інтерфейс: **http://localhost:8080**
-- Бекенд напряму (для налагодження): **http://localhost:8000**
+- Бекенд напряму недоступний: порт 8000 відкритий лише всередині Docker-мережі, усі запити йдуть через Nginx
 - Зображення: **http://localhost:8080/images/<ім'я_файлу>**
 
 Зупинка: `Ctrl+C`, або `docker compose down` (додай `-v`, щоб видалити volumes і зображення/логи разом з ними).

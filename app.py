@@ -10,11 +10,11 @@ from urllib.parse import urlparse, parse_qs
 
 def get_connection():
     return psycopg.connect(
-        dbname=os.environ.get("POSTGRES_DB", "app"),
-        user=os.environ.get("POSTGRES_USER", "app"),
-        password=os.environ.get("POSTGRES_PASSWORD", "app"),
-        host=os.environ.get("POSTGRES_HOST", "db"),
-        port=os.environ.get("POSTGRES_PORT", "5432"),
+        dbname=os.environ["POSTGRES_DB"],
+        user=os.environ["POSTGRES_USER"],
+        password=os.environ["POSTGRES_PASSWORD"],
+        host=os.environ["POSTGRES_HOST"],
+        port=os.environ["POSTGRES_PORT"],
     )
 # .jpeg технічно не згадано в ТЗ (лише .jpg), але це той самий формат JPEG —
 # додано для реальної зручності (WhatsApp, iPhone та багато камер зберігають саме так)
