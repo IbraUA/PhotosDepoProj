@@ -5,3 +5,4 @@ Dockerfile
 .idea
 .env
 backups/
+*.log

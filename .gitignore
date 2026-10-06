@@ -4,3 +4,4 @@ image-hosting
 __pycache__
 .env
 backups/
+*.log
