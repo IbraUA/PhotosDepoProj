@@ -3,3 +3,4 @@ image-hosting
 .idea
 __pycache__
 .env
+backups/
