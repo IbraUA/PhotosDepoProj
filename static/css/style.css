@@ -2,6 +2,54 @@ body {
     background-color: #F2F5FF;
     font-family: "Inter", sans-serif;
     color: rgb(255, 255, 255);
+    min-height: 100vh;
+    /* faint dot grid */
+    background-image: radial-gradient(rgba(0, 96, 255, 0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* background: two soft blue "aurora" blobs drifting behind the page */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    width: 55vmax;
+    height: 55vmax;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+body::before {
+    top: -20vmax;
+    left: -15vmax;
+    background: rgb(0, 96, 255);
+    animation: drift-a 22s ease-in-out infinite alternate;
+}
+
+body::after {
+    bottom: -25vmax;
+    right: -15vmax;
+    background: rgb(140, 170, 255);
+    animation: drift-b 28s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+    to { transform: translate(18vw, 14vh) scale(1.15); }
+}
+
+@keyframes drift-b {
+    to { transform: translate(-16vw, -12vh) scale(0.9); }
+}
+
+/* people who turned off animations in their OS get a still background */
+@media (prefers-reduced-motion: reduce) {
+    body::before,
+    body::after {
+        animation: none;
+    }
 }
 
 /* Header */
@@ -129,6 +177,9 @@ body {
     width: 540px;
     height: 233px;
     text-align: center;
+    /* frosted glass, so the text stays readable over the background */
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
 }
 
 .upload__icon {
@@ -320,4 +371,70 @@ body {
     /* REMOVE BACKGROUND ON HOVER */
     opacity: 0.7;
     /* Make the icon semi-transparent for user feedback */
+}
+
+/* images-list table */
+.images-table-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.images-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.images-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: #8a96b1;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.images-table td {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.images-table tr:last-child td {
+    border-bottom: none;
+}
+
+.images-table a {
+    color: rgb(0, 96, 255);
+    text-decoration: none;
+}
+
+.images-table a:hover {
+    text-decoration: underline;
+}
+
+.images-pagination {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.images-pagination a {
+    color: rgb(0, 96, 255);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.images-pagination a:hover {
+    text-decoration: underline;
+}
+
+.images-pagination span {
+    color: #8a96b1;
 }

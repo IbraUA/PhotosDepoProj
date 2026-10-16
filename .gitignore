@@ -2,3 +2,6 @@ image-hosting
 .venv
 .idea
 __pycache__
+.env
+backups/
+*.log
